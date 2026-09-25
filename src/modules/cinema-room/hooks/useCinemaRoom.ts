@@ -3,7 +3,7 @@ import { getAccessToken } from "../../auth/services/authApi";
 import { communityApi } from "../../community/services/communityApi";
 import type { Participant } from "../../community/types/WatchRoom";
 
-export type ChatMessage = { id: number; author: string; text: string };
+export type ChatMessage = { id: number; author: string; text: string; userId?: string };
 
 const HTTP_URL = import.meta.env.VITE_CINEMA_API_URL || "http://localhost:8001";
 
@@ -12,7 +12,7 @@ export function useCinemaRoom(sessionId?: string, movieId?: string, participants
   const [isPlaying, setIsPlaying] = useState(true);
   const isPlayingRef = useRef(true);
   const botMessageAdded = useRef(false);
-  const usersMapRef = useRef<Record<string, string>>({});
+  const [usersMap, setUsersMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!participants || participants.length === 0) return;
@@ -24,13 +24,15 @@ export function useCinemaRoom(sessionId?: string, movieId?: string, participants
           .catch(() => null)
       )
     ).then(results => {
-      const map: Record<string, string> = { ...usersMapRef.current };
-      results.forEach(res => {
-        if (res && res.id) {
-          map[res.id] = res.name;
-        }
+      setUsersMap(prev => {
+        const map = { ...prev };
+        results.forEach(res => {
+          if (res && res.id) {
+            map[res.id] = res.name;
+          }
+        });
+        return map;
       });
-      usersMapRef.current = map;
     });
   }, [participants]);
 
@@ -101,12 +103,13 @@ export function useCinemaRoom(sessionId?: string, movieId?: string, participants
                 let authorName = `Agente ${String(m.user_id).substring(0,4).toUpperCase()}`;
                 if (String(m.user_id).includes("Bot")) authorName = m.user_id;
                 else if (String(m.user_id) === myUuid) authorName = "Tú";
-                else if (usersMapRef.current[m.user_id]) authorName = usersMapRef.current[m.user_id];
+                // Defer dynamic mapping to render time
                 
                 newMessages.push({
                   id: msgId,
                   author: authorName,
-                  text: m.message
+                  text: m.message,
+                  userId: String(m.user_id)
                 });
               }
             });
@@ -173,8 +176,19 @@ export function useCinemaRoom(sessionId?: string, movieId?: string, participants
     syncPlayback(nextState);
   };
 
+  const mappedMessages = messages.map(m => {
+    // Si ya está como "Tú" o "🤖 Bot", no lo sobreescribimos
+    if (m.author === "Tú" || String(m.author).includes("Bot")) return m;
+    
+    // Si tenemos su nombre en el mapa, lo actualizamos dinámicamente
+    if (m.userId && usersMap[m.userId]) {
+      return { ...m, author: usersMap[m.userId] };
+    }
+    return m;
+  });
+
   return { 
-    messages, 
+    messages: mappedMessages, 
     sendMessage, 
     isPlaying, 
     setIsPlaying: handleSetIsPlaying, 

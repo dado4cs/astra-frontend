@@ -4,7 +4,12 @@ import { communityApi } from "../services/communityApi";
 import type { CreateWatchRoomInput, PlaybackUpdate } from "../types/WatchRoom";
 
 export function useWatchRoom(code?: string) {
-  return useQuery({ queryKey: ["community", "watch-room", code], queryFn: () => communityApi.getWatchRoom(code!), enabled: Boolean(code) });
+  return useQuery({ 
+    queryKey: ["community", "watch-room", code], 
+    queryFn: () => communityApi.getWatchRoom(code!), 
+    enabled: Boolean(code),
+    refetchInterval: 3000 
+  });
 }
 
 export function useCreateWatchRoom() {
