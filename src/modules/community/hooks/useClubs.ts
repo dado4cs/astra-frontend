@@ -35,6 +35,7 @@ export function useClub(clubId?: number) {
     queryKey: ["community", "club", clubId],
     queryFn: () => communityApi.getClub(clubId!),
     enabled: Boolean(clubId),
+    refetchInterval: 5000,
   });
 }
 
@@ -43,6 +44,7 @@ export function useClubMembers(clubId?: number) {
     queryKey: ["community", "club-members", clubId],
     queryFn: () => communityApi.getClubMembers(clubId!),
     enabled: Boolean(clubId),
+    refetchInterval: 5000,
   });
 }
 
