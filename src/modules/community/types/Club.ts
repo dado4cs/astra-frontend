@@ -31,3 +31,11 @@ export interface Member {
   role: MemberRole;
   joined_at: string;
 }
+
+export interface User {
+  id: number;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+

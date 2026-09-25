@@ -56,11 +56,47 @@ const roleBadgeStyle = (role: string): React.CSSProperties => ({
   textTransform: "uppercase" as const,
 });
 
+import { useUser } from "../hooks/useClubs";
+
+function MemberCard({ member, clubId, canRemove, onRemove }: { member: any, clubId: number, canRemove: boolean, onRemove: (id: number) => void }) {
+  const { data: user } = useUser(member.user_id);
+  const colors = ["#6558e8", "#e85858", "#58c4e8", "#e8a858", "#58e87a", "#e858c4"];
+  const color = colors[member.user_id % colors.length];
+  
+  const displayName = user?.display_name || user?.username || `Usuario #${member.user_id}`;
+  const initial = displayName.charAt(0).toUpperCase();
+
+  return (
+    <div style={memberCardStyle}>
+      <div style={avatarStyle(color)}>{initial}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ fontWeight: "bold", fontSize: "0.9rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {displayName}
+          </span>
+        </div>
+        <p style={{ color: "#6b7280", fontSize: "0.75rem", margin: 0 }}>
+          Desde {new Date(member.joined_at).toLocaleDateString("es")}
+        </p>
+      </div>
+      {canRemove && (
+        <button 
+          onClick={() => onRemove(member.user_id)}
+          style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", borderRadius: "4px", padding: "0.25rem 0.5rem", fontSize: "0.75rem", cursor: "pointer" }}
+        >
+          Eliminar
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function ClubDetailPage() {
   const { id } = useParams();
   const clubId = id ? Number(id) : undefined;
   const navigate = useNavigate();
   const { user } = useAuth();
+
 
   const { data: club, isLoading: clubLoading, isError: clubError } = useClub(clubId);
   const { data: members = [], isLoading: membersLoading } = useClubMembers(clubId);
@@ -113,6 +149,18 @@ export function ClubDetailPage() {
       navigate(`/orbit/${room.code}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo crear la órbita.");
+    }
+  };
+
+  const handleRemoveMember = async (userIdToRemove: number) => {
+    if (!window.confirm("¿Seguro que deseas eliminar a este miembro del club?")) return;
+    setError(null);
+    setSuccess(null);
+    try {
+      await leaveClub.mutateAsync({ clubId: club.id, userId: userIdToRemove });
+      setSuccess("Miembro eliminado del club.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo eliminar al miembro.");
     }
   };
 
@@ -171,20 +219,15 @@ export function ClubDetailPage() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "0.75rem" }}>
             {members.map((member) => {
-              const colors = ["#6558e8", "#e85858", "#58c4e8", "#e8a858", "#58e87a", "#e858c4"];
-              const color = colors[member.user_id % colors.length];
+              const canRemove = (isOwner || currentMembership?.role === "ADMIN") && member.user_id !== currentUserId;
               return (
-                <div key={member.id} style={memberCardStyle}>
-                  <div style={avatarStyle(color)}>U{member.user_id}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Usuario #{member.user_id}</span>
-                    </div>
-                    <p style={{ color: "#6b7280", fontSize: "0.75rem", margin: 0 }}>
-                      Desde {new Date(member.joined_at).toLocaleDateString("es")}
-                    </p>
-                  </div>
-                </div>
+                <MemberCard 
+                  key={member.id} 
+                  member={member} 
+                  clubId={club.id} 
+                  canRemove={canRemove} 
+                  onRemove={handleRemoveMember} 
+                />
               );
             })}
           </div>

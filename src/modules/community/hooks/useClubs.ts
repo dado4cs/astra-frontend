@@ -55,3 +55,12 @@ export function useLeaveClub() {
     },
   });
 }
+
+export function useUser(userId: number) {
+  return useQuery({
+    queryKey: ["community", "user", userId],
+    queryFn: () => communityApi.getUser(userId),
+    enabled: Boolean(userId),
+    staleTime: 1000 * 60 * 60, // cache for 1 hour to avoid refetching often
+  });
+}
