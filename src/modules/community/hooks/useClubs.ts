@@ -64,3 +64,11 @@ export function useUser(userId: number) {
     staleTime: 1000 * 60 * 60, // cache for 1 hour to avoid refetching often
   });
 }
+
+export function useUserMemberships(userId?: number) {
+  return useQuery({
+    queryKey: ["community", "user-memberships", userId],
+    queryFn: () => communityApi.getUserMemberships(userId!),
+    enabled: Boolean(userId),
+  });
+}

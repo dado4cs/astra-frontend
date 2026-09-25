@@ -45,6 +45,10 @@ export const communityApi = {
     try { const response = await communityClient.get<Member[]>(`/api/v1/clubs/${encodeURIComponent(clubId)}/members`); return unwrapResponse(response.data); }
     catch (error) { throw toApiError(error, "Community Service"); }
   },
+  async getUserMemberships(userId: number): Promise<Member[]> {
+    try { const response = await communityClient.get<Member[]>(`/api/v1/users/${encodeURIComponent(userId)}/clubs`); return unwrapResponse(response.data); }
+    catch (error) { throw toApiError(error, "Community Service"); }
+  },
   async getUser(userId: number): Promise<User> {
     try { const response = await communityClient.get<User>(`/api/v1/users/${encodeURIComponent(userId)}`); return unwrapResponse(response.data); }
     catch (error) { throw toApiError(error, "Community Service"); }
