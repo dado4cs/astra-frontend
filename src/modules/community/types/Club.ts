@@ -21,3 +21,13 @@ export interface PaginatedClubs {
   size: number;
   pages: number;
 }
+
+export type MemberRole = "OWNER" | "ADMIN" | "MEMBER";
+
+export interface Member {
+  id: number;
+  user_id: number;
+  club_id: number;
+  role: MemberRole;
+  joined_at: string;
+}

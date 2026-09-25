@@ -1,7 +1,7 @@
 import axios from "axios";
 
 import { toApiError } from "../../../core/api/apiError";
-import type { Club, CreateClubInput, PaginatedClubs } from "../types/Club";
+import type { Club, CreateClubInput, Member, PaginatedClubs } from "../types/Club";
 import type { CreateWatchRoomInput, JoinWatchRoomInput, JoinWatchRoomResult, PlaybackState, PlaybackUpdate, WatchRoom, WatchRoomCreated } from "../types/WatchRoom";
 
 const communityClient = axios.create({
@@ -35,6 +35,18 @@ export const communityApi = {
   },
   async joinClub(clubId: number): Promise<void> {
     try { await communityClient.post(`/api/v1/clubs/${encodeURIComponent(clubId)}/members`); }
+    catch (error) { throw toApiError(error, "Community Service"); }
+  },
+  async getClub(clubId: number): Promise<Club> {
+    try { const response = await communityClient.get<Club>(`/api/v1/clubs/${encodeURIComponent(clubId)}`); return unwrapResponse(response.data); }
+    catch (error) { throw toApiError(error, "Community Service"); }
+  },
+  async getClubMembers(clubId: number): Promise<Member[]> {
+    try { const response = await communityClient.get<Member[]>(`/api/v1/clubs/${encodeURIComponent(clubId)}/members`); return unwrapResponse(response.data); }
+    catch (error) { throw toApiError(error, "Community Service"); }
+  },
+  async leaveClub(clubId: number, userId: number): Promise<void> {
+    try { await communityClient.delete(`/api/v1/clubs/${encodeURIComponent(clubId)}/members/${userId}`); }
     catch (error) { throw toApiError(error, "Community Service"); }
   },
   async createWatchRoom(input: CreateWatchRoomInput): Promise<WatchRoomCreated> {

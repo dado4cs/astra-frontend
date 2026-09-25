@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import { ClubsPage } from "../modules/community/pages/ClubsPage";
+import { ClubDetailPage } from "../modules/community/pages/ClubDetailPage";
 import { ExplorePage } from "../modules/catalog/pages/ExplorePage";
 import { HomePage } from "../modules/catalog/pages/HomePage";
 import { MovieDetailPage } from "../modules/catalog/pages/MovieDetailPage";
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { element: <ProtectedRoute />, children: [
         { path: "/profile", element: <ProfilePage /> },
         { path: "/clubs", element: <ClubsPage /> },
+        { path: "/clubs/:id", element: <ClubDetailPage /> },
         { path: "/orbit/:code", element: <OrbitPage /> },
       ] },
       { element: <ProtectedRoute requiredRole="ADMIN" />, children: [

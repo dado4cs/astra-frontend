@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useClubs, useCreateClub, useJoinClub } from "../hooks/useClubs";
 
 export function ClubsPage() {
@@ -76,11 +77,14 @@ export function ClubsPage() {
           {clubs.map((club) => (
             <article className="simple-card" key={club.id}>
               <span>{String(club.id).padStart(2, "0")}</span>
-              <h2>{club.name}</h2>
+              <h2><Link to={`/clubs/${club.id}`} style={{ color: "inherit", textDecoration: "none" }}>{club.name}</Link></h2>
               <p>{club.description || "Sin descripción"}</p>
-              <button className="button button-secondary" onClick={() => handleJoinClub(club.id)} disabled={joinClub.isPending}>
-                Unirse al club
-              </button>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                <Link to={`/clubs/${club.id}`} className="button button-primary" style={{ textDecoration: "none" }}>Ver club</Link>
+                <button className="button button-secondary" onClick={() => handleJoinClub(club.id)} disabled={joinClub.isPending}>
+                  Unirse
+                </button>
+              </div>
             </article>
           ))}
         </div>
