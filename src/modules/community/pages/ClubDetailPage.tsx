@@ -179,7 +179,6 @@ export function ClubDetailPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <span style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Usuario #{member.user_id}</span>
-                      <span style={roleBadgeStyle(member.role)}>{member.role}</span>
                     </div>
                     <p style={{ color: "#6b7280", fontSize: "0.75rem", margin: 0 }}>
                       Desde {new Date(member.joined_at).toLocaleDateString("es")}
