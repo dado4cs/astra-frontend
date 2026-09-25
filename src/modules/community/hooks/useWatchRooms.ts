@@ -14,3 +14,7 @@ export function useCreateWatchRoom() {
 export function useUpdatePlayback() {
   return useMutation({ mutationFn: ({ roomId, input }: { roomId: string; input: PlaybackUpdate }) => communityApi.updatePlayback(roomId, input) });
 }
+
+export function useJoinWatchRoom() {
+  return useMutation({ mutationFn: ({ code, input }: { code: string; input: { nickname: string } }) => communityApi.joinWatchRoom(code, input) });
+}

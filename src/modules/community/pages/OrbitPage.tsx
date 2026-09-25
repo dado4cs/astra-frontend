@@ -1,6 +1,8 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
+import { useAuth } from "../../auth/hooks/useAuth";
 import { CatalogState } from "../../catalog/components/CatalogState";
 import { useMovie, useMovieSession } from "../../catalog/hooks/useMovies";
 import { CinemaControls } from "../../cinema-room/components/CinemaControls";
@@ -8,18 +10,34 @@ import { LiveChat } from "../../cinema-room/components/LiveChat";
 import Participants from "../../cinema-room/components/Participants";
 import { VideoPlayer } from "../../cinema-room/components/VideoPlayer";
 import { useCinemaRoom } from "../../cinema-room/hooks/useCinemaRoom";
-import { useUpdatePlayback, useWatchRoom } from "../hooks/useWatchRooms";
+import { useUpdatePlayback, useWatchRoom, useJoinWatchRoom } from "../hooks/useWatchRooms";
 
 export function OrbitPage() {
   const { code } = useParams();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { data: watchRoom, isLoading: isRoomLoading, isError: isRoomError } = useWatchRoom(code);
   const { data: movie, isLoading: isMovieLoading, isError: isMovieError } = useMovie(watchRoom?.movieId);
   const { data: session, isLoading: isSessionLoading, isError: isSessionError } = useMovieSession(watchRoom?.movieId);
-  const room = useCinemaRoom(watchRoom?.sessionId || watchRoom?.id, movie?.id);
+  const room = useCinemaRoom(watchRoom?.sessionId || watchRoom?.id, movie?.id, watchRoom?.participants);
   const updatePlayback = useUpdatePlayback();
+  const joinRoom = useJoinWatchRoom();
   const [copied, setCopied] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (watchRoom && user && code) {
+      const alreadyJoined = watchRoom.participants?.some(p => p.userId === Number(user.id));
+      if (!alreadyJoined) {
+        joinRoom.mutate({ code, input: { nickname: user.name || user.email || "Usuario" } }, {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ["community", "watch-room", code] });
+          }
+        });
+      }
+    }
+  }, [watchRoom?.id, user?.id]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);

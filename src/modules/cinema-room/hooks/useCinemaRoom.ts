@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { getAccessToken } from "../../auth/services/authApi";
 import { communityApi } from "../../community/services/communityApi";
+import type { Participant } from "../../community/types/WatchRoom";
 
 export type ChatMessage = { id: number; author: string; text: string };
 
 const HTTP_URL = import.meta.env.VITE_CINEMA_API_URL || "http://localhost:8001";
 
-export function useCinemaRoom(sessionId?: string, movieId?: string) {
+export function useCinemaRoom(sessionId?: string, movieId?: string, participants: Participant[] = []) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isPlaying, setIsPlaying] = useState(true);
   const isPlayingRef = useRef(true);
@@ -14,18 +15,24 @@ export function useCinemaRoom(sessionId?: string, movieId?: string) {
   const usersMapRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
-    communityApi.getUsers(200)
-      .then(users => {
-        const map: Record<string, string> = {};
-        users.forEach(u => {
-          if (u.identity_user_id) {
-            map[u.identity_user_id] = u.display_name || u.username;
-          }
-        });
-        usersMapRef.current = map;
-      })
-      .catch(console.error);
-  }, []);
+    if (!participants || participants.length === 0) return;
+    
+    Promise.all(
+      participants.map(p => 
+        communityApi.getUser(p.userId)
+          .then(user => ({ id: user.identity_user_id, name: p.nickname }))
+          .catch(() => null)
+      )
+    ).then(results => {
+      const map: Record<string, string> = { ...usersMapRef.current };
+      results.forEach(res => {
+        if (res && res.id) {
+          map[res.id] = res.name;
+        }
+      });
+      usersMapRef.current = map;
+    });
+  }, [participants]);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
