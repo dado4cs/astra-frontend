@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { getAccessToken } from "../../auth/services/authApi";
+import { communityApi } from "../../community/services/communityApi";
 
 export type ChatMessage = { id: number; author: string; text: string };
 
@@ -10,6 +11,21 @@ export function useCinemaRoom(sessionId?: string, movieId?: string) {
   const [isPlaying, setIsPlaying] = useState(true);
   const isPlayingRef = useRef(true);
   const botMessageAdded = useRef(false);
+  const usersMapRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    communityApi.getUsers(200)
+      .then(users => {
+        const map: Record<string, string> = {};
+        users.forEach(u => {
+          if (u.identity_user_id) {
+            map[u.identity_user_id] = u.display_name || u.username;
+          }
+        });
+        usersMapRef.current = map;
+      })
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -78,6 +94,7 @@ export function useCinemaRoom(sessionId?: string, movieId?: string) {
                 let authorName = `Agente ${String(m.user_id).substring(0,4).toUpperCase()}`;
                 if (String(m.user_id).includes("Bot")) authorName = m.user_id;
                 else if (String(m.user_id) === myUuid) authorName = "Tú";
+                else if (usersMapRef.current[m.user_id]) authorName = usersMapRef.current[m.user_id];
                 
                 newMessages.push({
                   id: msgId,

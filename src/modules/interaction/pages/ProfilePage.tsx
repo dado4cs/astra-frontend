@@ -64,7 +64,7 @@ export function ProfilePage() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "1.5rem" }}>
               {watchlist?.map(movie => (
-                <Link to={`/movies/${movie.id}`} key={movie.id} style={{ textDecoration: "none" }}>
+                <Link to={`/movie/${movie.id}`} key={movie.id} style={{ textDecoration: "none" }}>
                   <div style={{ 
                     borderRadius: "12px", overflow: "hidden", 
                     background: "rgba(255,255,255,0.05)",
@@ -101,7 +101,7 @@ export function ProfilePage() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "1.5rem" }}>
               {likes?.map(movie => (
-                <Link to={`/movies/${movie.id}`} key={movie.id} style={{ textDecoration: "none" }}>
+                <Link to={`/movie/${movie.id}`} key={movie.id} style={{ textDecoration: "none" }}>
                   <div style={{ 
                     borderRadius: "12px", overflow: "hidden", 
                     background: "rgba(255,255,255,0.05)",

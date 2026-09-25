@@ -74,10 +74,10 @@ export const catalogApi = {
 
 
   async getMovie(publicId: string): Promise<MovieDetailResponse> {
-    const movies = await fetchMovies(0, 100);
-    const movie = movies.find(({ id }) => id === publicId);
-    if (!movie) throw new Error("Película no encontrada en el catálogo");
-    return { ...movie, artists: [] };
+    try {
+      const response = await catalogClient.get<MovieDetailResponse>(`/api/catalog/movies/${encodeURIComponent(publicId)}`);
+      return unwrapResponse(response.data);
+    } catch (error) { throw toApiError(error, "Catalog Service"); }
   },
 
   async getMovieSession(publicId: string): Promise<MovieSessionResponse> {
