@@ -25,7 +25,6 @@ export const router = createBrowserRouter([
         { path: "/profile", element: <ProfilePage /> },
         { path: "/clubs", element: <ClubsPage /> },
         { path: "/clubs/:id", element: <ClubDetailPage /> },
-        { path: "/orbit/:code", element: <OrbitPage /> },
       ] },
       { element: <ProtectedRoute requiredRole="ADMIN" />, children: [
         { path: "/analytics", element: <AdminDashboard /> },
@@ -34,5 +33,8 @@ export const router = createBrowserRouter([
   },
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
-  { element: <ProtectedRoute />, children: [{ path: "/cinema/:id", element: <CinemaRoomPage /> }] },
+  { element: <ProtectedRoute />, children: [
+    { path: "/cinema/:id", element: <CinemaRoomPage /> },
+    { path: "/orbit/:code", element: <OrbitPage /> }
+  ] },
 ]);
